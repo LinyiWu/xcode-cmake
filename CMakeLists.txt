@@ -33,3 +33,6 @@ add_executable(${MYNAME} MACOSX_BUNDLE
 )
 
 include(${CMAKE_SOURCE_DIR}/cmake/${MYNAME}.cmake)
+set_target_properties(${MYNAME} PROPERTIES
+  XCODE_ATTRIBUTE_MARKETING_VERSION[variant=Release] "1.2"
+)

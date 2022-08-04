@@ -30,6 +30,8 @@ cmake -GXcode -S ./ -B build/
 **NOTE**:
 + [project.pbxproj](hello/project.pbxproj) refers to `Info.plist` by relative path(`hello/Info.plist`), so the generated `cmake/hello.cmake` behaves the same. Put `CMakeLists.txt` in the parent directory of `hello` if you want to include target-level cmake files.
 
++ Included settings could be overwritten, provided that configuration variant is explicitly stated. See `set_target_properties` in [CMakeLists.txt](CMakeLists.txt) for example.
+
 ## Why another xcode/ios cmake tool
 
 I hope cmake generated projects have xcode-default warnings enabled (see Xcode -> PROJECT -> Build Settings -> Apple Clang - Warnings).
