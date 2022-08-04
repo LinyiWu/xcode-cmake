@@ -1,0 +1,5 @@
+from pbxproj.PBXObject import PBXObject
+from pbxproj.PBXNativeTarget import PBXNativeTarget
+from pbxproj.PBXProject import PBXProject
+from pbxproj.XCBuildConfiguration import XCBuildConfiguration
+from pbxproj.XCConfigurationList import XCConfigurationList
