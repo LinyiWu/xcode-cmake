@@ -10,24 +10,30 @@ def mk_project_attr(config: str, k: str, v: str) -> str:
     #   [Debug, Release, MinSizeRel, RelWithDebInfo]
     # xcode default project has 2 configurations
     #   [Debug, Release]
+    def attr(k, vari, v):
+        return f'set(CMAKE_XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}")\n'
+
     if config == "Debug":
-        return f'set(CMAKE_XCODE_ATTRIBUTE_{k}[variant=Debug] "{v}")\n'
+        return attr(k, config, v)
 
     result = ""
     variants = ["Release", "MinSizeRel", "RelWithDebInfo"]
-    for vari in variants:
-        result += f'set(CMAKE_XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}")\n'
+    for config in variants:
+        result += attr(k, config, v)
     return result
 
 
 def mk_targets_attr(config: str, k: str, v: str) -> str:
+    def attr(k, vari, v):
+        return f'XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}"\n'
+
     if config == "Debug":
-        return f'XCODE_ATTRIBUTE_{k}[variant=Debug] "{v}"\n'
+        return attr(k, config, v)
 
     result = ""
     variants = ["Release", "MinSizeRel", "RelWithDebInfo"]
-    for vari in variants:
-        result += f'XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}"\n'
+    for config in variants:
+        result += attr(k, config, v)
     return result
 
 
