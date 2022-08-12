@@ -1,54 +1,71 @@
 #!/usr/bin/env python3
 from pbxproj.PBXProject import PBXProject
 from pbxproj.PBXNativeTarget import PBXNativeTarget
+from typing import Callable
 import argparse
 import os
 
 
-def mk_project_attr(config: str, k: str, v: str) -> str:
-    # CMAKE_CONFIGURATION_TYPES
-    #   [Debug, Release, MinSizeRel, RelWithDebInfo]
-    # xcode default project has 2 configurations
-    #   [Debug, Release]
-    def attr(k, vari, v):
-        return f'set(CMAKE_XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}")\n'
-
-    if config == "Debug":
-        return attr(k, config, v)
-
-    result = ""
-    variants = ["Release", "MinSizeRel", "RelWithDebInfo"]
-    for config in variants:
-        result += attr(k, config, v)
-    return result
+# CMAKE_CONFIGURATION_TYPES
+#   [Debug, Release, MinSizeRel, RelWithDebInfo]
+XCodeDefaultConfigurations = {"Debug", "Release"}
 
 
-def mk_targets_attr(config: str, k: str, v: str) -> str:
-    def attr(k, vari, v):
-        return f'XCODE_ATTRIBUTE_{k}[variant={vari}] "{v}"\n'
+class X2CAttributes:
+    def __init__(self) -> None:
+        self.dd = {}
+        return
 
-    if config == "Debug":
-        return attr(k, config, v)
+    def add(self, config: str, k: str, v: str) -> None:
+        assert(config in XCodeDefaultConfigurations)
+        if k not in self.dd:
+            self.dd[k] = {}
+        self.dd[k][config] = v
+        return
 
-    result = ""
-    variants = ["Release", "MinSizeRel", "RelWithDebInfo"]
-    for config in variants:
-        result += attr(k, config, v)
-    return result
+    def dump(self, invoke: Callable[[str, str, str], str]) -> None:
+        """
+        invoke(c, k, v)
+        """
+        for (k, cv) in self.dd.items():
+            cv: dict
+            if (set(cv.keys()) == XCodeDefaultConfigurations and
+                    len(set(cv.values())) == 1):
+                invoke('', k, list(cv.values())[0])
+            else:
+                for (config, v) in cv.items():
+                    if config == "Debug":
+                        invoke(f'[variant={config}]', k, v)
+                    else:
+                        for config in ["Release", "MinSizeRel", "RelWithDebInfo"]:
+                            invoke(f'[variant={config}]', k, v)
+        return
+
+
+def mk_project_attr(c: str, k: str, v: str) -> str:
+    return f'set(CMAKE_XCODE_ATTRIBUTE_{k}{c} "{v}")\n'
+
+
+def mk_targets_attr(c: str, k: str, v: str) -> str:
+    return f'XCODE_ATTRIBUTE_{k}{c} "{v}"\n'
 
 
 def main(input: str, output: str):
-    rootObject = PBXProject.new_from_file(input)
+    rootObject: PBXProject = PBXProject.new_from_file(input)
     with open(os.path.join(output, "xcode_attr.cmake"), "w") as fo:
+        attr = X2CAttributes()
         rootObject.parse_project_build_settings(
-            lambda a, b, c: fo.write(mk_project_attr(a, b, c)))
+            lambda config, k, v: attr.add(config, k, v))
+        attr.dump(lambda c, k, v: fo.write(mk_project_attr(c, k, v)))
 
     for target in rootObject.targets:
         target: PBXNativeTarget
         with open(os.path.join(output, f"{target.name}.cmake"), "w") as fo:
             fo.write(f"set_target_properties({target.name} PROPERTIES\n")
+            attr = X2CAttributes()
             target.parse_build_settings(
-                lambda a, b, c: fo.write(mk_targets_attr(a, b, c)))
+                lambda config, k, v: attr.add(config, k, v))
+            attr.dump(lambda c, k, v: fo.write(mk_targets_attr(c, k, v)))
             fo.write(")\n")
 
     return

@@ -27,6 +27,9 @@ class PBXProject(PBXObject):
         return PBXProject.new(rootObjectIDStr, objects)
 
     def parse_project_build_settings(self, invoke: Callable[[str, str, str], None]):
+        """
+        invoke(config, k, v)
+        """
         self.buildConfigurationList.parse_build_settings(invoke)
         return
 

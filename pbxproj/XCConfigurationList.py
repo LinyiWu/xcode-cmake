@@ -7,7 +7,7 @@ class XCConfigurationList(PBXObject):
     def __init__(self, idstr, objects) -> None:
         super().__init__(idstr, objects)
         assert(self.isa == "XCConfigurationList")
-        self.buildConfigurations = []
+        self.buildConfigurations: list[XCBuildConfiguration] = []
         for idstr in self._data["buildConfigurations"]:
             self.buildConfigurations.append(
                 XCBuildConfiguration.new(idstr, objects))

@@ -7,7 +7,7 @@ class XCBuildConfiguration(PBXObject):
         super().__init__(idstr, objects)
         assert(self.isa == "XCBuildConfiguration")
         self.buildSettings: dict = self._data["buildSettings"]
-        self.name = self._data["name"]
+        self.name: str = self._data["name"]
         return
 
     def parse_build_settings(self, invoke: Callable[[str, str, str], None]):

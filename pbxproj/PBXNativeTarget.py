@@ -13,5 +13,8 @@ class PBXNativeTarget(PBXObject):
         return
 
     def parse_build_settings(self, invoke: Callable[[str, str, str], None]):
+        """
+        invoke(config, k, v)
+        """
         self.buildConfigurationList.parse_build_settings(invoke)
         return
